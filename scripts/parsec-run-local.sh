@@ -55,15 +55,24 @@ sleep 1
     --ticket_machine_count=1 --ticket_machine0_endpoint=$IP:7777 \
     --loglevel=$LOGLEVEL > logs/ticket_machined.log &
 sleep 1
-# create jail
-# copy any desired binaries/dependencies - /agentd, /dev/urandom
-# enter chroot environment and call agentd
-sudo chroot --userspec=$(id -u $USER):$(id -u $USER) /sandbox /busybox sh
-
-
 ./scripts/wait-for-it.sh -s $IP:7777 -t 60 -- ./scripts/wait-for-it.sh -s \
-    $IP:5556 -t 60 -- ./build/src/parsec/agent/agentd --shard_count=1 \
-    --shard0_count=1 --shard00_endpoint=$IP:5556 --node_id=0 --component_id=0 \
-    --agent_count=1 --agent0_endpoint=$IP:$PORT --ticket_machine_count=1 \
-    --ticket_machine0_endpoint=$IP:7777 --loglevel=$LOGLEVEL \
-    --runner_type=$RUNNER_TYPE > logs/agentd.log &
+   $IP:5556 -t 60 --
+# create jail + directories
+chr="/sandbox"
+sudo mkdir -p $chr
+sudo mkdir -p $chr/{bin,lib}
+sudo mkdir -p $chr/logs/agentd.log
+# copy any desired binaries - /usr/bin/busybox (currently), /agentd (currently), /dev/urandom
+sudo cp /usr/bin/busybox $chr/bin
+sudo cp ./build/src/parsec/agent/agentd $chr/bin
+# copy dependencies into lib
+list="$(ldd ./build/src/parsec/agent/agentd | egrep -o '/lib.*\.[0-9]')"
+for i in $list; do sudo cp --parents $i $chr/lib; done
+# enter chroot environment
+cd $chr
+# call agentd
+sudo chroot --userspec=$(id -u $USER):$(id -g $USER) $chr /bin/agentd --shard_count=1 \
+   --shard0_count=1 --shard00_endpoint=$IP:5556 --node_id=0 --component_id=0 \
+   --agent_count=1 --agent0_endpoint=$IP:$PORT --ticket_machine_count=1 \
+   --ticket_machine0_endpoint=$IP:7777 --loglevel=$LOGLEVEL \
+   --runner_type=$RUNNER_TYPE > logs/agentd.log &

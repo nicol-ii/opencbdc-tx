@@ -82,7 +82,7 @@ namespace cbdc::parsec::agent::runner {
         }
 
         // chroot
-        char path[1024];
+        /* char path[1024];
         ssize_t count = readlink("/proc/self/exe", path, sizeof(path));
         std::cerr << "[TEST] current working directory is " << std::string(path, (count > 0) ? count : 0) << std::endl;
 
@@ -100,7 +100,7 @@ namespace cbdc::parsec::agent::runner {
             } else {
                 std::cerr << "[TEST] jail succeeded" << std::endl;
             }
-        }
+        } */
         schedule_contract();
 
         return true;

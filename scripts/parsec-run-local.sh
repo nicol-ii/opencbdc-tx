@@ -55,6 +55,7 @@ sleep 1
     --ticket_machine_count=1 --ticket_machine0_endpoint=$IP:7777 \
     --loglevel=$LOGLEVEL > logs/ticket_machined.log &
 sleep 1
+
 ./scripts/wait-for-it.sh -s $IP:7777 -t 60 -- ./scripts/wait-for-it.sh -s \
    $IP:5556 -t 60 --
 # create jail + directories

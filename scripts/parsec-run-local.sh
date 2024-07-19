@@ -55,20 +55,21 @@ sleep 1
     --ticket_machine_count=1 --ticket_machine0_endpoint=$IP:7777 \
     --loglevel=$LOGLEVEL > logs/ticket_machined.log &
 sleep 1
-
 ./scripts/wait-for-it.sh -s $IP:7777 -t 60 -- ./scripts/wait-for-it.sh -s \
    $IP:5556 -t 60 --
 # create jail + directories
 chr="/sandbox"
-sudo mkdir -p $chr
-sudo mkdir -p $chr/{bin,lib}
-sudo mkdir -p $chr/logs/agentd.log
-# copy any desired binaries - /usr/bin/busybox (currently), /agentd (currently), /dev/urandom
+sudo mkdir -p $chr/{bin,lib,logs,dev}
+sudo touch $chr/logs/agentd.log
+# copy any desired binaries - /usr/bin/busybox (currently), /agentd (currently), /dev/urandom (now?)
 sudo cp /usr/bin/busybox $chr/bin
 sudo cp ./build/src/parsec/agent/agentd $chr/bin
+sudo mknod -m 666 $chr/dev/urandom c 1 9
 # copy dependencies into lib
 list="$(ldd ./build/src/parsec/agent/agentd | egrep -o '/lib.*\.[0-9]')"
-for i in $list; do sudo cp --parents $i $chr/lib; done
+for i in $list; do sudo cp --parents $i $chr; done
+# permissions
+sudo chmod a+w $chr/logs/agentd.log
 # enter chroot environment
 cd $chr
 # call agentd

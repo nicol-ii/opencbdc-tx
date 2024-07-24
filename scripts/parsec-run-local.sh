@@ -59,10 +59,11 @@ sleep 1
    $IP:5556 -t 60 --
 # create jail + directories
 chr="/sandbox"
-sudo mkdir -p $chr/{bin,lib,logs,dev}
+sudo mkdir -p $chr/{bin,lib,logs,dev,etc}
 sudo touch $chr/logs/agentd.log
 # copy any desired binaries - /usr/bin/busybox (currently), /agentd (currently), /dev/urandom (now?)
 sudo cp /usr/bin/busybox $chr/bin
+sudo cp /etc/resolv.conf $chr/etc
 sudo cp ./build/src/parsec/agent/agentd $chr/bin
 sudo mknod -m 666 $chr/dev/urandom c 1 9
 # copy dependencies into lib

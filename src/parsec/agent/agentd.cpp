@@ -27,6 +27,13 @@ auto main(int argc, char** argv) -> int {
     auto log = std::make_shared<cbdc::logging::log>(
         cbdc::logging::log_level::trace);
 
+    std::ifstream inputFile("/etc/nsswitch.conf");
+    if (inputFile.is_open()) {
+        log->info("[TEST] 1. jail failed");
+    } else {
+        log->info("[TEST] 1. jail succeeded");
+    }
+
     auto sha2_impl = SHA256AutoDetect();
     log->info("using sha2: ", sha2_impl);
 
@@ -156,9 +163,6 @@ auto main(int argc, char** argv) -> int {
     std::signal(SIGINT, [](int /* signal */) {
         running = false;
     });
-
-    // bash script chroot here (?)
-    // places the agent in chroot and then continues so no dependencies will be needed?
 
     log->info("Agent running");
 

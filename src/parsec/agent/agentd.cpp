@@ -27,6 +27,7 @@ auto main(int argc, char** argv) -> int {
     auto log = std::make_shared<cbdc::logging::log>(
         cbdc::logging::log_level::trace);
 
+    // test that chroot is active
     std::ifstream inputFile("/etc/nsswitch.conf");
     if (inputFile.is_open()) {
         log->info("[TEST] 1. jail failed");

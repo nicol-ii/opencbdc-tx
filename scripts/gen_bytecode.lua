@@ -58,7 +58,7 @@ function gen_bytecode()
         from_seq = sequence + 1
         return update_accounts(from, from_balance, from_seq, to, to_balance, to_seq)
     end
-    c = string.dump(pay_contract, true)
+    c = string.dump(pay_contract, true) -- to bytecode
     tot = ""
     for i = 1, string.len(c) do
         hex = string.format("%x", string.byte(c, i))

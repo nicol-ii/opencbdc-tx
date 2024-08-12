@@ -6,7 +6,7 @@ function contract(param)
         _, name, amount = table.unpack(param)
         value = trylock(name)
         if value >= amount then
-            return true
+            return {[name]=trylock(name)-amount}
         else
             return false
         end

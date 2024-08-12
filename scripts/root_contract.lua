@@ -4,27 +4,29 @@ end
             
 function R(C,p)
     original_trylock = trylock
-    function new_trylock(k)
-        return original_trylock("storage_" .. C .. "_" .. k)
-    end
 
     function subroutine(C,p)
         function new_trylock(k)
             return original_trylock("storage_" .. C .. "_" .. k)
         end
         local f = assert(load(original_trylock("contract_" .. C)))
-        local _ENV = { trylock=new_trylock, debug=debug, table=table, subroutine=subroutine, print=print, error=error, pairs=pairs }
+        local _ENV = { trylock=new_trylock, debug=debug, table=table, subroutine=subroutine, print=print, error=error, pairs=pairs, string=string }
         debug.setupvalue(f, 1, _ENV)
         f()
         _ENV.debug = nil
-        return contract(p)
+        update = contract(p)
+        if update == true or update == false then return update end -- if update is not a table
+        sanitized_update = {}
+        for k, v in pairs(update) do
+            if string.sub(k, 1, 7) == "storage" then
+                sanitized_update[k] = v
+            else
+                sanitized_update["storage_" .. C .. "_" .. k] = v
+            end
+        end
+        return sanitized_update
     end
-
-    -- sandbox
+    
     update = subroutine(C, p)
-    sanitized_update = {}
-    for k, v in pairs(update) do
-        sanitized_update["storage_" .. C .. "_" .. k] = v
-    end
-    return sanitized_update
+    return update
 end

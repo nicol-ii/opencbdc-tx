@@ -84,56 +84,89 @@ contract_swap = io.open("./contracts/contract_swap.lua","rb"):read "*a"
 contract_a = io.open("./contracts/contract_a.lua","rb"):read "*a"
 contract_b = io.open("./contracts/contract_b.lua","rb"):read "*a"
 
-test_db = {["storage_USD_Alice"]=10, ["storage_CAD_Alice"]=0,
-             ["storage_USD_Bob"]=0, ["storage_CAD_Bob"]=11,
-             ["storage_a_all"]="a",
-             ["storage_b_all"]="b",
+test_db = {["storage_USD_Alice"]=1000, ["storage_CAD_Alice"]=0,
+             ["storage_USD_Bob"]=0, ["storage_CAD_Bob"]=1000,
+             ["storage_a_all"]="aaa",
+             ["storage_b_all"]="bbb",
              ["contract_USD"]=contract_USD,
              ["contract_CAD"]=contract_CAD,
              ["contract_swap"]=contract_swap,
              ["contract_a"]=contract_a,
-             ["contract_b"]=contract_b
+             ["contract_b"]=contract_b,
+             ["contract_swap_users"]={["Alice"]=true, ["Bob"]=true},
+             ["contract_USD_users"]={["Alice"]=true, ["Bob"]=true},
+             ["contract_CAD_users"]={["Alice"]=true, ["Bob"]=true}
 }
-        
 
-function trylock(k) -- original trylock
+function trylock(k)
     return test_db[k]
 end
-            
 
-function R(C,p)
-    original_trylock = trylock
-    function new_trylock(k)
-        return original_trylock("storage_" .. C .. "_" .. k)
+function check_sig(from, sig, payload) -- for unit testing sake... do smth simple
+end
+
+function pack_account(updates, name, balance, seq)
+    updates[name] = string.pack("I8 I8", balance, seq)
+end
+
+function update_accounts(from_acc, from_bal, from_seq, to_acc, to_bal, to_seq)
+    ret = {}
+    pack_account(ret, from_acc, from_bal, from_seq)
+    if to_acc ~= nil then
+        pack_account(ret, to_acc, to_bal, to_seq)
     end
+    return ret
+end
 
-    function subroutine(C,p)
+function hook()
+    error("too many instructions")
+end 
+
+function R(C,payload)
+    debug.sethook(hook, "", 1000) -- instruction limit, can only have 1000 instructions
+
+    function subroutine(C,payload)
         function new_trylock(k)
-            return original_trylock("storage_" .. C .. "_" .. k)
+            return trylock("storage_" .. C .. "_" .. k)
         end
-        local f = assert(load(original_trylock("contract_" .. C)))
-        local _ENV = { trylock=new_trylock, debug=debug, table=table, subroutine=subroutine, print=print, error=error, pairs=pairs }
+        local f = assert(load(trylock("contract_" .. C)))
+        local _ENV = { trylock=new_trylock, pack_account=pack_account, update_accounts=update_accounts, subroutine=subroutine,
+                        debug=debug,
+                        table=table, print=print, error=error, pairs=pairs, string=string, type=type }
         debug.setupvalue(f, 1, _ENV)
         f()
         _ENV.debug = nil
-        return contract(p)
+        update = contract(payload)
+
+
+        
+        sanitized_update = {}
+        -- ayo.
+        for k, v in pairs(update) do
+            if k:sub(1,8) == "storage_" then 
+                sanitized_update[k] = v
+            else
+                sanitized_update["storage_" .. C .. "_" .. k] = v
+            end
+        end
+        return sanitized_update
     end
 
-    -- sandbox
-    update = subroutine(C, p)
-    sanitized_update = {}
-    for k, v in pairs(update) do
-        sanitized_update["storage_" .. C .. "_" .. k] = v
-    end
-    return sanitized_update
+    update = subroutine(C, payload)
+    debug.sethook()
+    return update
 end
 
-update = R("swap", {"Alice", "Bob", 10, 11, "USD", "CAD"})
+function call(usr,C,payload)
+    -- check if user has permission to execute contract through whitelist/blacklist
+    if not trylock("contract_" .. C .. "_users")[usr] then
+        error("no permission to use contract")
+    end
+    return R(C,payload)
+end
+
+update = call("Alice", "swap", {"Alice", "Bob", 10, 11, "USD", "CAD"})
 for k,v in pairs(update) do print(k .. " " .. v) end
-
-    
-
-
 
 
 

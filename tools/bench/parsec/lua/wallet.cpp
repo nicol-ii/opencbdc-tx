@@ -25,8 +25,10 @@ namespace cbdc::parsec {
         auto rnd = cbdc::random_source(cbdc::config::random_source);
         m_privkey = rnd.random_hash();
         m_pubkey = cbdc::pubkey_from_privkey(m_privkey, m_secp.get());
-        constexpr auto account_prefix = "account_";
+        constexpr auto account_prefix = "storage_"; // pay&i
         m_account_key.append(account_prefix, std::strlen(account_prefix));
+        m_account_key.append(pay_contract_key.data(), pay_contract_key.size());
+        m_account_key.append("_", 1);
         m_account_key.append(m_pubkey.data(), m_pubkey.size());
     }
 
@@ -37,7 +39,7 @@ namespace cbdc::parsec {
         auto ser = cbdc::buffer_serializer(init_account);
         ser << value << m_sequence;
         auto res = put_row(m_broker,
-                           m_account_key,
+                           m_account_key, // will need to be modified to root contract
                            init_account,
                            [&, result_callback, value](bool ret) {
                                if(ret) {
@@ -55,7 +57,7 @@ namespace cbdc::parsec {
         if(amount > m_balance) {
             return false;
         }
-        auto params = make_pay_params(to, amount);
+        auto params = make_pay_params(m_pay_contract_key, to, amount);
         return execute_params(params, false, result_callback);
     }
 
@@ -65,13 +67,15 @@ namespace cbdc::parsec {
 
     auto account_wallet::update_balance(
         const std::function<void(bool)>& result_callback) -> bool {
-        auto params = make_pay_params(pubkey_t{}, 0);
+        auto params = make_pay_params(m_pay_contract_key, pubkey_t{}, 0);
         return execute_params(params, false, result_callback);
     }
 
-    auto account_wallet::make_pay_params(pubkey_t to, uint64_t amount) const
+    auto account_wallet::make_pay_params(cbdc::buffer pay_contract, pubkey_t to, uint64_t amount) const
         -> cbdc::buffer {
         auto params = cbdc::buffer();
+        params.append(pay_contract.data(), pay_contract.size()); // pay contract in params
+
         params.append(m_pubkey.data(), m_pubkey.size());
         params.append(to.data(), to.size());
         params.append(&amount, sizeof(amount));

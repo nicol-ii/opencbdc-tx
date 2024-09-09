@@ -27,7 +27,7 @@ auto main(int argc, char** argv) -> int {
         log->error("Not enough arguments");
         return 1;
     }
-    auto cfg = cbdc::parsec::read_config(argc - 2, argv);
+    auto cfg = cbdc::parsec::read_config(argc - 3, argv);
     if(!cfg.has_value()) {
         log->error("Error parsing options");
         return 1;
@@ -77,6 +77,7 @@ auto main(int argc, char** argv) -> int {
         log);
 
     auto contract_file = args[args.size() - 2];
+    auto root_contract_file = args[args.size() - 3];
     auto pay_contract = cbdc::buffer();
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
@@ -88,10 +89,40 @@ auto main(int argc, char** argv) -> int {
         return 1;
     }
     pay_contract = cbdc::buffer::from_hex(lua_tostring(L, -1)).value();
+    
+    // upload root bytecode to shard
+    auto root_contract = cbdc::buffer();
+    luaL_dofile(L, root_contract_file.c_str());
+    lua_getglobal(L, "gen_rc");
+    if(lua_pcall(L, 0, 1, 0) != 0) {
+        log->error("Contract bytecode generation failed, with error:",
+                   lua_tostring(L, -1));
+        return 1;
+    }
+    root_contract = cbdc::buffer::from_hex(lua_tostring(L, -1)).value();
+
+    auto init_error = std::atomic_bool{false};
+    auto root_contract_key = cbdc::buffer();
+    root_contract_key.append("root", 4);
+
+    log->info("Inserting root contract");
+    auto root_ret = cbdc::parsec::put_row(
+        broker,
+        root_contract_key, // to be added...
+        root_contract,
+        [&](bool res) {
+            if(!res) {
+                init_error = true;
+            } else {
+                log->info("Inserted root contract");
+            }
+        });
+    if(!root_ret) {
+        init_error = true;
+    }
 
     auto pay_keys = std::vector<cbdc::buffer>();
     auto init_count = std::atomic<size_t>();
-    auto init_error = std::atomic_bool{false};
     for(size_t i = 0; i < n_wallets; i++) {
         auto pay_contract_key = cbdc::buffer();
         pay_contract_key.append("pay", 3);

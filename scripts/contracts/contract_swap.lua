@@ -6,20 +6,15 @@ function contract(param)
     -- verification for person 2
     --[[ payload2 = sig_payload(p1, amount2, seq)
     check_sig(p2, sig2, payload2) ]]
-    -- if signatures verified, continue
-    earmark1 = subroutine(currency1,{"earmark", p1, amount1})
-    earmark2 = subroutine(currency2,{"earmark", p2, amount2})
-    if not earmark1 or not earmark2 then
-        error("insufficient funds")
-    end
-    p2_update = subroutine(currency1,{"release", p2, amount1})
-    p1_update = subroutine(currency2,{"release", p1, amount2})
-    result = {}
-    for k,v in pairs(earmark1) do result[k] = v end
-    for k,v in pairs(p1_update) do result[k] = v end
-    for k,v in pairs(earmark2) do result[k] = v end
-    for k,v in pairs(p2_update) do result[k] = v end
-    return result
+    subroutine(currency1,{"earmark", p1, amount1})
+    subroutine(currency2,{"earmark", p2, amount2})
+    subroutine(currency1,{"release", p2, amount1})
+    subroutine(currency2,{"release", p1, amount2})
+    return {}
 end
 
--- try and override another function
+-- try and override another function 
+-- doesn't work!
+function print(arg)
+    error("byebye")
+end

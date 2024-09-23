@@ -1,6 +1,11 @@
 function gen_bytecode()
     pay_contract = function(param)
         from, to, value, sequence, sig = string.unpack("c32 c32 I8 I8 c64", param)
+        print(from)
+        print(to)
+        print(value)
+        print(sequence)
+        print(sig)
 
         function get_account_key(name)
             return "account_" .. name

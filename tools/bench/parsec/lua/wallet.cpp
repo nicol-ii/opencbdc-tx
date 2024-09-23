@@ -104,6 +104,7 @@ namespace cbdc::parsec {
                                         nullptr,
                                         nullptr);
         params.append(sig.data(), sig.size());
+        m_log->warn(params.size());
         return params;
     }
 
@@ -111,6 +112,8 @@ namespace cbdc::parsec {
         cbdc::buffer params,
         bool dry_run,
         const std::function<void(bool)>& result_callback) -> bool {
+        auto buf = cbdc::buffer();
+        buf.append("root", 4);
         auto send_success = m_agent->exec(
             m_pay_contract_key,
             std::move(params),

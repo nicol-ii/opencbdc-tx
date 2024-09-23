@@ -105,6 +105,7 @@ namespace cbdc::parsec::broker {
                     k_it->second.m_value = v;
 
                     m_log->trace(this, "Broker locked key for", ticket_number);
+                    m_log->trace(this, "Broker locked key: ", key.to_hex());
 
                     return v;
                 },

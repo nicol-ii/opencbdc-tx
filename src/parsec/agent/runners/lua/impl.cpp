@@ -169,6 +169,7 @@ namespace cbdc::parsec::agent::runner {
                 return;
             }
             auto key_buf = get_stack_string(-1);
+            m_log->trace("key_buffer", key_buf.value().to_hex());
             if(!key_buf.has_value()) {
                 m_log->error("Contract did not yield a string");
                 m_result_callback(error_code::yield_type);

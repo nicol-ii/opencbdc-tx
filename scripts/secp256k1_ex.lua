@@ -1,3 +1,5 @@
+-- allows usage of secp256 directly in lua
+
 local ffi = require("ffi")
 
 ffi.cdef[[

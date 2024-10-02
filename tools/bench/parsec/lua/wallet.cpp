@@ -74,8 +74,8 @@ namespace cbdc::parsec {
     auto account_wallet::make_pay_params(cbdc::buffer pay_contract, pubkey_t to, uint64_t amount) const
         -> cbdc::buffer {
         auto params = cbdc::buffer();
-        params.append(pay_contract.data(), pay_contract.size()); // pay contract in params
 
+        params.append(pay_contract.data(), pay_contract.size()); // pay contract in params
         params.append(m_pubkey.data(), m_pubkey.size());
         params.append(to.data(), to.size());
         params.append(&amount, sizeof(amount));
@@ -115,7 +115,7 @@ namespace cbdc::parsec {
         auto buf = cbdc::buffer();
         buf.append("root", 4);
         auto send_success = m_agent->exec(
-            m_pay_contract_key,
+            buf,
             std::move(params),
             dry_run,
             [&, result_callback](agent::interface::exec_return_type res) {

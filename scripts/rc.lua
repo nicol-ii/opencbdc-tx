@@ -19,21 +19,22 @@ function gen_rc()
         
         function subroutine(C,payload) -- update the map
             function new_trylock(k)
-                --[[ if pre_update_map[C] and pre_update_map[C][k] then -- if value already in map
+                if pre_update_map[C] and pre_update_map[C][k] then -- if value already in map
                     return pre_update_map[C][k]
-                end ]]
+                end
                 return trylock(k)
-                --return trylock("storage_" .. C .. "_" .. k) -- if not already in map
+                return trylock("storage_" .. C .. "_" .. k) -- if not already in map
             end
     
             local update;
             -- sandbox
             do
-                -- local f = assert(load(trylock("contract_" .. C)))
-                local f = assert(load(trylock(C)))
+                local f = assert(load(trylock("contract_" .. C)))
+                -- local f = assert(load(trylock(C)))
                 local _ENV = { trylock=new_trylock, subroutine=subroutine,
                                 debug=debug,
-                                table=table, print=print, error=error, pairs=pairs }
+                                table=table, print=print, error=error, pairs=pairs, 
+                                coroutine=coroutine } -- needs to be gotten rid of before deployment
                 debug.setupvalue(f, 1, _ENV)
                 f()
                 _ENV.debug = nil

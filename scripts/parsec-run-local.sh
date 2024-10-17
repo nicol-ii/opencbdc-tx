@@ -63,7 +63,7 @@ sleep 1
     --ticket_machine0_endpoint=$IP:7777 --loglevel=$LOGLEVEL \
     --runner_type=$RUNNER_TYPE > logs/agentd.log &
 
-: '
+: 
 ./scripts/wait-for-it.sh -s $IP:7777 -t 60 -- ./scripts/wait-for-it.sh -s \
    $IP:5556 -t 60 --
 chr="/sandbox"
@@ -81,4 +81,3 @@ sudo chroot --userspec=$(id -u $USER):$(id -g $USER) $chr /bin/agentd --shard_co
    --agent_count=1 --agent0_endpoint=$IP:$PORT --ticket_machine_count=1 \
    --ticket_machine0_endpoint=$IP:7777 --loglevel=$LOGLEVEL \
    --runner_type=$RUNNER_TYPE > logs/agentd.log &
-'

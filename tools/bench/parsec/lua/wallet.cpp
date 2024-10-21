@@ -104,7 +104,7 @@ namespace cbdc::parsec {
                                         nullptr,
                                         nullptr);
         params.append(sig.data(), sig.size());
-        m_log->warn(params.size());
+        // m_log->warn(params.size());
         return params;
     }
 

@@ -55,29 +55,33 @@ sleep 1
     --ticket_machine_count=1 --ticket_machine0_endpoint=$IP:7777 \
     --loglevel=$LOGLEVEL > logs/ticket_machined.log &
 sleep 1
-
 ./scripts/wait-for-it.sh -s $IP:7777 -t 60 -- ./scripts/wait-for-it.sh -s \
     $IP:5556 -t 60 -- ./build/src/parsec/agent/agentd --shard_count=1 \
     --shard0_count=1 --shard00_endpoint=$IP:5556 --node_id=0 --component_id=0 \
     --agent_count=1 --agent0_endpoint=$IP:$PORT --ticket_machine_count=1 \
     --ticket_machine0_endpoint=$IP:7777 --loglevel=$LOGLEVEL \
     --runner_type=$RUNNER_TYPE > logs/agentd.log &
-
-: 
-./scripts/wait-for-it.sh -s $IP:7777 -t 60 -- ./scripts/wait-for-it.sh -s \
-   $IP:5556 -t 60 --
-chr="/sandbox"
-sudo mkdir -p $chr/{bin,lib,logs,dev,etc}
-sudo touch $chr/logs/agentd.log
-sudo cp /etc/resolv.conf $chr/etc
-sudo cp ./build/src/parsec/agent/agentd $chr/bin
-sudo mknod -m 666 $chr/dev/urandom c 1 9
-list="$(ldd ./build/src/parsec/agent/agentd | egrep -o '/lib.*\.[0-9]')"
-for i in $list; do sudo cp --parents $i $chr; done
-sudo chmod a+w $chr/logs/agentd.log
-cd $chr
-sudo chroot --userspec=$(id -u $USER):$(id -g $USER) $chr /bin/agentd --shard_count=1 \
-   --shard0_count=1 --shard00_endpoint=$IP:5556 --node_id=0 --component_id=0 \
-   --agent_count=1 --agent0_endpoint=$IP:$PORT --ticket_machine_count=1 \
-   --ticket_machine0_endpoint=$IP:7777 --loglevel=$LOGLEVEL \
-   --runner_type=$RUNNER_TYPE > logs/agentd.log &
+#./scripts/wait-for-it.sh -s $IP:7777 -t 60 -- ./scripts/wait-for-it.sh -s \
+#    $IP:5556 -t 60 -- ./build/src/parsec/agent/agentd --shard_count=1 \
+#    --shard0_count=1 --shard00_endpoint=$IP:5556 --node_id=0 --component_id=0 \
+#    --agent_count=1 --agent0_endpoint=$IP:$PORT --ticket_machine_count=1 \
+#    --ticket_machine0_endpoint=$IP:7777 --loglevel=$LOGLEVEL \
+#    --runner_type=$RUNNER_TYPE > logs/agentd.log &
+#: 
+#./scripts/wait-for-it.sh -s $IP:7777 -t 60 -- ./scripts/wait-for-it.sh -s \
+#   $IP:5556 -t 60 --
+#chr="/sandbox"
+#sudo mkdir -p $chr/{bin,lib,logs,dev,etc}
+#sudo touch $chr/logs/agentd.log
+#sudo cp /etc/resolv.conf $chr/etc
+#sudo cp ./build/src/parsec/agent/agentd $chr/bin
+#sudo mknod -m 666 $chr/dev/urandom c 1 9
+#list="$(ldd ./build/src/parsec/agent/agentd | egrep -o '/lib.*\.[0-9]')"
+#for i in $list; do sudo cp --parents $i $chr; done
+#sudo chmod a+w $chr/logs/agentd.log
+#cd $chr
+# sudo chroot --userspec=$(id -u $USER):$(id -g $USER) $chr /bin/agentd --shard_count=1 \
+#  --shard0_count=1 --shard00_endpoint=$IP:5556 --node_id=0 --component_id=0 \
+#   --agent_count=1 --agent0_endpoint=$IP:$PORT --ticket_machine_count=1 \
+#   --ticket_machine0_endpoint=$IP:7777 --loglevel=$LOGLEVEL \
+#   --runner_type=$RUNNER_TYPE > logs/agentd.log &

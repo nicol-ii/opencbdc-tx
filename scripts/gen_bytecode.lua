@@ -1,11 +1,6 @@
 function gen_bytecode()
     pay_contract = function(param)
         from, to, value, sequence, sig = string.unpack("c32 c32 I8 I8 c64", param)
-        print(from)
-        print(to)
-        print(value)
-        print(sequence)
-        print(sig)
 
         function get_account_key(name)
             return "account_" .. name
@@ -13,7 +8,8 @@ function gen_bytecode()
 
         function get_account(name)
             account_key = get_account_key(name)
-            account_data = coroutine.yield(account_key)
+            account_data = trylock(account_key)
+            --account_data = coroutine.yield(account_key)
             if #account_data > 0 then
                 return string.unpack("I8 I8", account_data)
             end

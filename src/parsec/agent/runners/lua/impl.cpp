@@ -271,6 +271,7 @@ namespace cbdc::parsec::agent::runner {
         return 0;
     }
 
+
     auto lua_runner::make_hash(lua_State* L) -> int {
         int n = lua_gettop(L);
         if(n != 1) {
@@ -294,8 +295,8 @@ namespace cbdc::parsec::agent::runner {
         hash_t computed_hash{};
         sha.Finalize(computed_hash.data());
         
-        lua_pushlstring(L, reinterpret_cast<char*>(computed_hash.data()), sz);
+        lua_pushlstring(L, reinterpret_cast<char*>(computed_hash.data()), 32);
 
-        return 0;
+        return 1;
     }
 }

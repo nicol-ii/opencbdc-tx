@@ -55,6 +55,8 @@ namespace cbdc::parsec::agent::runner {
 
         static auto check_sig(lua_State* L) -> int;
 
+        static auto make_hash(lua_State* L) -> int;
+
         bool m_is_chrooted;
     };
 }

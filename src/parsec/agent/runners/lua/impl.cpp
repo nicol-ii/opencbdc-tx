@@ -321,7 +321,7 @@ namespace cbdc::parsec::agent::runner {
         cbdc::hash_t computed_hash{};
         sha.Finalize(computed_hash.data());
         lua_pushlstring(L, reinterpret_cast<char*>(computed_hash.data()), sz);
-        return 1;
+        return 1; // function returns 1 stack element
     }
 
 }

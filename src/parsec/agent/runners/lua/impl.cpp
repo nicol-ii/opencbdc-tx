@@ -282,12 +282,8 @@ namespace cbdc::parsec::agent::runner {
 
         str = lua_tolstring(L, 3, &sz);
         assert(str != nullptr);
-        auto sha = CSHA256();
-        auto unsigned_str = std::vector<unsigned char>(sz);
-        std::memcpy(unsigned_str.data(), str, sz);
-        sha.Write(unsigned_str.data(), sz);
         hash_t sighash{};
-        sha.Finalize(sighash.data());
+        sighash = hash_data((std::byte*)str, sz);
 
         if(secp256k1_schnorrsig_verify(secp_context.get(),
                                        sig.data(),
@@ -314,12 +310,8 @@ namespace cbdc::parsec::agent::runner {
         size_t sz{};
         const auto* str = lua_tolstring(L, 1, &sz);
         assert(str != nullptr);
-        auto sha = CSHA256();
-        auto unsigned_str = std::vector<unsigned char>(sz);
-        std::memcpy(unsigned_str.data(), str, sz);
-        sha.Write(unsigned_str.data(), sz);
-        cbdc::hash_t computed_hash{};
-        sha.Finalize(computed_hash.data());
+        hash_t computed_hash{};
+        computed_hash = hash_data((std::byte*)str, sz);
         lua_pushlstring(L, reinterpret_cast<char*>(computed_hash.data()), sz);
         return 1; // function returns 1 stack element
     }

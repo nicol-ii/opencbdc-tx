@@ -296,7 +296,7 @@ namespace cbdc::parsec::agent::runner {
 
         return 0;
     }
-	
+
     auto lua_runner::make_hash(lua_State* L) -> int {
         int n = lua_gettop(L);
         if(n != 1) {
@@ -304,9 +304,9 @@ namespace cbdc::parsec::agent::runner {
             lua_error(L);
         }
         if(lua_isstring(L, 1) != 1) {
-                lua_pushliteral(L, "invalid preimage");
-                lua_error(L);
-            }
+            lua_pushliteral(L, "invalid preimage");
+            lua_error(L);
+        }
         size_t sz{};
         const auto* str = lua_tolstring(L, 1, &sz);
         assert(str != nullptr);

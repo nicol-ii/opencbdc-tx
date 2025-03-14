@@ -312,7 +312,7 @@ namespace cbdc::parsec::agent::runner {
         assert(str != nullptr);
         hash_t computed_hash{};
         computed_hash = hash_data((std::byte*)str, sz);
-        lua_pushlstring(L, reinterpret_cast<char*>(computed_hash.data()), sz);
+        lua_pushlstring(L, reinterpret_cast<char*>(computed_hash.data()), 32);
         return 1; // function returns 1 stack element
     }
 

@@ -44,6 +44,7 @@ namespace cbdc::parsec::agent::runner {
         /// Lock type to acquire when requesting the function code.
         static constexpr auto initial_lock_type = broker::lock_type::read;
 
+      static auto make_hash(lua_State* L) -> int;
       private:
         std::shared_ptr<lua_State> m_state;
 
@@ -59,7 +60,7 @@ namespace cbdc::parsec::agent::runner {
         handle_try_lock(const broker::interface::try_lock_return_type& res);
 
         static auto check_sig(lua_State* L) -> int;
-        static auto make_hash(lua_State* L) -> int;
+        // static auto make_hash(lua_State* L) -> int;
     };
 }
 
